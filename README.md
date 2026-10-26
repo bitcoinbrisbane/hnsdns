@@ -128,3 +128,7 @@ addresses (Linux binds the whole `127/8` by default; on macOS add aliases with
    binary.
 3. A local DoH listener, so browsers can keep "secure DNS" on and point it here.
 4. A small DANE-checking HTTPS proxy for DANE-only sites.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
