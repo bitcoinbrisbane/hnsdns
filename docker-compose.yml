@@ -1,0 +1,36 @@
+# hnsd (Handshake SPV light client + root server) and hnsdns side by side.
+# Then point your machine's DNS at 127.0.0.1.
+#
+#   docker compose up -d
+#   dig @127.0.0.1 welcome.nb
+#
+# To serve the rest of your network (e.g. on a NAS), change the published
+# ports to "53:53/udp" and "53:53/tcp" and point clients/the router at the
+# host's IP.
+services:
+  hnsd:
+    image: handshakeorg/hnsd:latest
+    restart: unless-stopped
+    # -n: authoritative root server hnsdns queries; -r: hnsd's own recursive
+    # server, kept internal and unused.
+    command: ["-n", "0.0.0.0:5369", "-r", "127.0.0.1:5370", "-p", "4"]
+
+  hnsdns:
+    build: .
+    image: hnsdns:local
+    restart: unless-stopped
+    depends_on: [hnsd]
+    command:
+      - -listen=0.0.0.0:53
+      - -hns-root=hnsd:5369
+      - -tld-cache=/data/tlds.txt
+      # - -zone=lan=192.168.1.1:53   # local names to your router
+      # - -v                          # log every query
+    ports:
+      - "127.0.0.1:53:53/udp"
+      - "127.0.0.1:53:53/tcp"
+    volumes:
+      - hnsdns-data:/data
+
+volumes:
+  hnsdns-data:
